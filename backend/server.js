@@ -16,7 +16,15 @@ const pool = new Pool({
 app.get('/', (req, res) => {
   res.send('Chaiwala API Running');
 });
+app.get('/api/vendors', async (req, res) => {
 
+  const result = await pool.query(
+    'SELECT * FROM vendors'
+  );
+
+  res.json(result.rows);
+
+});
 app.listen(process.env.PORT || 3000, () => {
   console.log('Server Started');
 });
