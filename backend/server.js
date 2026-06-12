@@ -1,30 +1,35 @@
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-require('dotenv').config();
+app.post('/api/order', async (req,res)=>{
 
-const app = express();
+try{
 
-app.use(cors());
-app.use(express.json());
+const {
+vendor_id,
+customer_name,
+customer_mobile,
+cups
+} = req.body;
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+const result = await pool.query(
+`INSERT INTO orders
+(vendor_id,customer_name,customer_mobile,cups)
+VALUES ($1,$2,$3,$4)
+RETURNING *`,
+[
+vendor_id,
+customer_name,
+customer_mobile,
+cups
+]
+);
+
+res.json(result.rows[0]);
+
+}catch(err){
+
+res.status(500).json({
+error:err.message
 });
 
-app.get('/', (req, res) => {
-  res.send('Chaiwala API Running');
-});
-app.get('/api/vendors', async (req, res) => {
+}
 
-  const result = await pool.query(
-    'SELECT * FROM vendors'
-  );
-
-  res.json(result.rows);
-
-});
-app.listen(process.env.PORT || 3000, () => {
-  console.log('Server Started');
 });
