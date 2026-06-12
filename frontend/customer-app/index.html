@@ -2,74 +2,65 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Chaiwala - Order Tea</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaiwala - Customer</title>
+
 <style>
-body{font-family:Arial;background:#f4f4f4;padding:20px}
-.card{background:#fff;padding:20px;border-radius:10px}
-button{
-width:70px;
-height:70px;
-font-size:24px;
-margin:5px;
-border:none;
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:15px;
+}
+.vendor{
+background:white;
+padding:15px;
+margin-bottom:10px;
 border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+button{
 background:#ff9800;
 color:white;
-}
-input{
-width:100%;
-padding:12px;
-margin-top:10px;
-}
-.order{
-width:100%;
-height:50px;
-margin-top:15px;
+border:none;
+padding:10px 15px;
+border-radius:6px;
+cursor:pointer;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
+<h1>☕ Nearby Tea Vendors</h1>
 
-<h2>☕ Chaiwala</h2>
-
-<h3>Raju Tea Stall</h3>
-
-<button onclick="quickOrder(1)">1</button>
-<button onclick="quickOrder(2)">2</button>
-<button onclick="quickOrder(3)">3</button>
-
-<br>
-
-<button onclick="quickOrder(4)">4</button>
-<button onclick="quickOrder(5)">5</button>
-<button onclick="quickOrder(6)">6</button>
-
-<br>
-
-<button onclick="quickOrder(7)">7</button>
-
-<input id="customQty" type="number" placeholder="More than 7 cups">
-
-<button class="order" onclick="customOrder()">
-Place Order
-</button>
-
-</div>
+<div id="vendorList"></div>
 
 <script>
+fetch('../../vendors.json')
+.then(r => r.json())
+.then(vendors => {
 
-function quickOrder(qty){
-alert(qty + " Cups Ordered");
-}
+let html = '';
 
-function customOrder(){
-let qty=document.getElementById("customQty").value;
-alert(qty + " Cups Ordered");
-}
+vendors.forEach(vendor => {
 
+html += `
+<div class="vendor">
+<h3>${vendor.name}</h3>
+<p>📍 ${vendor.city}</p>
+<p>Tea ₹${vendor.price}</p>
+
+<a href="order.html?vendor=${vendor.id}">
+<button>Order Tea</button>
+</a>
+
+</div>
+`;
+
+});
+
+document.getElementById('vendorList').innerHTML = html;
+
+});
 </script>
 
 </body>
