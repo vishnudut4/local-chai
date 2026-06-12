@@ -1,1 +1,16 @@
-
+[
+  {
+    "id": 1,
+    "name": "Raju Tea Stall",
+    "city": "Rajsamand",
+    "price": 10,
+    "mobile": "9876543210"
+  },
+  {
+    "id": 2,
+    "name": "Sharma Tea Point",
+    "city": "Rajsamand",
+    "price": 12,
+    "mobile": "9876543211"
+  }
+]
