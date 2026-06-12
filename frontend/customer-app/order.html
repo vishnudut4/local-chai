@@ -1,1 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order Tea</title>
 
+<style>
+body{
+font-family:Arial;
+padding:20px;
+background:#f4f4f4;
+}
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+margin-top:15px;
+}
+button{
+padding:15px;
+font-size:20px;
+border:none;
+border-radius:8px;
+background:#ff9800;
+color:white;
+}
+input{
+width:100%;
+padding:12px;
+margin-top:15px;
+}
+.big{
+width:100%;
+margin-top:15px;
+background:green;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<h2 id="vendorName">Loading...</h2>
+
+<div class="grid">
+<button onclick="order(1)">1</button>
+<button onclick="order(2)">2</button>
+<button onclick="order(3)">3</button>
+<button onclick="order(4)">4</button>
+<button onclick="order(5)">5</button>
+<button onclick="order(6)">6</button>
+<button onclick="order(7)">7</button>
+</div>
+
+<input id="qty" type="number" placeholder="More than 7 cups">
+
+<button class="big" onclick="customOrder()">
+Place Order
+</button>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+const vendorId = params.get('vendor');
+
+fetch('../../vendors.json')
+.then(r=>r.json())
+.then(vendors=>{
+
+const vendor =
+vendors.find(v=>v.id == vendorId);
+
+if(vendor){
+document.getElementById('vendorName').innerText =
+vendor.name;
+}
+
+});
+
+function order(cups){
+
+alert(
+"Order Sent\nVendor ID: "
++ vendorId +
+"\nCups: "
++ cups
+);
+
+}
+
+function customOrder(){
+
+const qty =
+document.getElementById('qty').value;
+
+if(!qty){
+alert("Enter quantity");
+return;
+}
+
+alert(
+"Order Sent\nVendor ID: "
++ vendorId +
+"\nCups: "
++ qty
+);
+
+}
+
+</script>
+
+</body>
+</html>
