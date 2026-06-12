@@ -21,7 +21,15 @@ app.get('/', (req, res) => {
 });
 
 // Get All Vendors
-app.get('/api/vendors', async (req, res) => {
+const result = await pool.query(`
+  SELECT
+    id,
+    name,
+    mobile,
+    city,
+    subscription_expiry
+  FROM vendors
+`);
 
   try {
 
