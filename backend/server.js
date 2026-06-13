@@ -454,131 +454,6 @@ error:err.message
 
 });
 app.get('/api/vendor/:id/customer-balance', async (req,res)=>{  try{  const vendorId = req.params.id;  const dueResult = await pool.query( "SELECT customer_name, COALESCE(SUM(amount),0) as due FROM ledger WHERE vendor_id=$1 GROUP BY customer_name", [vendorId] );  const paymentResult = await pool.query( "SELECT customer_name, COALESCE(SUM(amount),0) as paid FROM payments WHERE vendor_id=$1 GROUP BY customer_name", [vendorId] );  res.json({ due: dueResult.rows, paid: paymentResult.rows });  }catch(err){  res.status(500).json({ error: err.message });  }  });  app.get('/api/vendor/:id/dashboard', async (req,res)=>{  try{  const vendorId = req.params.id;  const salesResult = await pool.query( "SELECT COALESCE(SUM(amount),0) as sales FROM ledger WHERE vendor_id=$1", [vendorId] );  const dueResult = await pool.query( "SELECT COALESCE(SUM(amount),0) as due FROM ledger WHERE vendor_id=$1", [vendorId] );  const customerResult = await pool.query( "SELECT COUNT(DISTINCT customer_mobile) as customers FROM ledger WHERE vendor_id=$1", [vendorId] );  res.json({ sales: salesResult.rows[0].sales, due: dueResult.rows[0].due, customers: customerResult.rows[0].customers });  }catch(err){  res.status(500).json({ error: err.message });  }  });  app.get('/api/vendor/:id/customer-balances', async (req,res)=>{  try{  const vendorId = req.params.id;  const result = await pool.query( "SELECT customer_name, customer_mobile, COALESCE(SUM(amount),0) as due FROM ledger WHERE vendor_id=$1 GROUP BY customer_name, customer_mobile ORDER BY customer_name", [vendorId] );  res.json(result.rows);  }catch(err){  res.status(500).json({ error: err.message });  }  });
-app.get('/api/vendor/:id/customer-balance', async (req,res)=>{  try{  const vendorId = req.params.id;  const dueResult = await pool.query( "SELECT customer_name, COALESCE(SUM(amount),0) as due FROM ledger WHERE vendor_id=$1 GROUP BY customer_name", [vendorId] );  const paymentResult = await pool.query( "SELECT customer_name, COALESCE(SUM(amount),0) as paid FROM payments WHERE vendor_id=$1 GROUP BY customer_name", [vendorId] );  res.json({ due: dueResult.rows, paid: paymentResult.rows });  }catch(err){  res.status(500).json({ error: err.message });  }  });  app.get('/api/vendor/:id/dashboard', async (req,res)=>{  try{  const vendorId = req.params.id;  const salesResult = await pool.query( "SELECT COALESCE(SUM(amount),0) as sales FROM ledger WHERE vendor_id=$1", [vendorId] );  const dueResult = await pool.query( "SELECT COALESCE(SUM(amount),0) as due FROM ledger WHERE vendor_id=$1", [vendorId] );  const customerResult = await pool.query( "SELECT COUNT(DISTINCT customer_mobile) as customers FROM ledger WHERE vendor_id=$1", [vendorId] );  res.json({ sales: salesResult.rows[0].sales, due: dueResult.rows[0].due, customers: customerResult.rows[0].customers });  }catch(err){  res.status(500).json({ error: err.message });  }  });  app.get('/api/vendor/:id/customer-balances', async (req,res)=>{  try{  const vendorId = req.params.id;  const result = await pool.query( "SELECT customer_name, customer_mobile, COALESCE(SUM(amount),0) as due FROM ledger WHERE vendor_id=$1 GROUP BY customer_name, customer_mobile ORDER BY customer_name", [vendorId] );  res.json(result.rows);  }catch(err){  res.status(500).json({ error: err.message });  }  });
-
-try{
-
-const vendorId = req.params.id;
-
-const dueResult = await pool.query(
-`
-SELECT
-customer_name,
-COALESCE(SUM(amount),0) as due
-FROM ledger
-WHERE vendor_id=$1
-GROUP BY customer_name
-`,
-[vendorId]
-);
-
-const paymentResult = await pool.query(
-`
-SELECT
-customer_name,
-COALESCE(SUM(amount),0) as paid
-FROM payments
-WHERE vendor_id=$1
-GROUP BY customer_name
-`,
-[vendorId]
-);
-
-res.json({
-due: dueResult.rows,
-paid: paymentResult.rows
-});
-
-}catch(err){
-
-res.status(500).json({
-error:err.message
-});
-
-}
-
-});
-const vendorId = req.params.id;
-
-const dueResult = await pool.query(
-`
-SELECT
-customer_name,
-COALESCE(SUM(amount),0) as due
-FROM ledger
-WHERE vendor_id=$1
-GROUP BY customer_name
-`,
-[vendorId]
-);
-
-const paymentResult = await pool.query(
-`
-SELECT
-customer_name,
-COALESCE(SUM(amount),0) as paid
-FROM payments
-WHERE vendor_id=$1
-GROUP BY customer_name
-`,
-[vendorId]
-);
-
-res.json({
-due: dueResult.rows,
-paid: paymentResult.rows
-});
-  app.get('/api/vendor/:id/dashboard', async (req,res)=>{
-
-try{
-
-const vendorId = req.params.id;
-
-// Total Sales
-const salesResult = await pool.query(
-`
-SELECT COALESCE(SUM(amount),0) as sales
-FROM ledger
-WHERE vendor_id=$1
-`,
-[vendorId]
-);
-
-// Outstanding Due
-const dueResult = await pool.query(
-`
-SELECT COALESCE(SUM(amount),0) as due
-FROM ledger
-WHERE vendor_id=$1
-`,
-[vendorId]
-);
-
-// Customer Count
-const customerResult = await pool.query(
-`
-SELECT COUNT(DISTINCT customer_mobile) as customers
-FROM ledger
-WHERE vendor_id=$1
-`,
-[vendorId]
-);
-
-res.json({
-sales:salesResult.rows[0].sales,
-due:dueResult.rows[0].due,
-customers:customerResult.rows[0].customers
-});
-
-}catch(err){
-
-res.status(500).json({
-error:err.message
-});
-
-}
-
-});
 app.get('/api/vendor/:id/customer-balance', async (req,res)=>{
 
 try{
@@ -602,9 +477,7 @@ paid: paymentResult.rows
 
 }catch(err){
 
-res.status(500).json({
-error:err.message
-});
+res.status(500).json({ error: err.message });
 
 }
 
@@ -621,27 +494,19 @@ const salesResult = await pool.query(
 [vendorId]
 );
 
-const dueResult = await pool.query(
-"SELECT COALESCE(SUM(amount),0) as due FROM ledger WHERE vendor_id=$1",
-[vendorId]
-);
-
 const customerResult = await pool.query(
 "SELECT COUNT(DISTINCT customer_mobile) as customers FROM ledger WHERE vendor_id=$1",
 [vendorId]
 );
 
 res.json({
-sales:salesResult.rows[0].sales,
-due:dueResult.rows[0].due,
-customers:customerResult.rows[0].customers
+sales: salesResult.rows[0].sales,
+customers: customerResult.rows[0].customers
 });
 
 }catch(err){
 
-res.status(500).json({
-error:err.message
-});
+res.status(500).json({ error: err.message });
 
 }
 
@@ -662,9 +527,7 @@ res.json(result.rows);
 
 }catch(err){
 
-res.status(500).json({
-error:err.message
-});
+res.status(500).json({ error: err.message });
 
 }
 
