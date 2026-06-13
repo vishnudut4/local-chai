@@ -543,6 +543,7 @@ error:err.message
 try{
 
 const vendorId = req.params.id;
+  
 
 const result = await pool.query(
 `
