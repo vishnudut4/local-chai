@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vendor QR</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:20px;
+text-align:center;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+max-width:500px;
+margin:auto;
+}
+
+img{
+margin-top:20px;
+max-width:250px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+box-sizing:border-box;
+}
+
+button{
+padding:12px 20px;
+margin-top:15px;
+background:green;
+color:white;
+border:none;
+border-radius:8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>☕ Chaiwala QR</h2>
+
+<p id="vendorLink"></p>
+
+<img id="qrImage">
+
+<br>
+
+<button onclick="window.print()">
+Print QR
+</button>
+
+</div>
+
+<script>
+
+const params =
+new URLSearchParams(window.location.search);
+
+const vendorId =
+params.get('vendor') || 1;
+
+const orderUrl =
+'https://vishnudut4.github.io/local-chai/frontend/customer-app/order.html?vendor='
++ vendorId;
+
+document.getElementById('vendorLink').innerText =
+orderUrl;
+
+document.getElementById('qrImage').src =
+'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='
++ encodeURIComponent(orderUrl);
+
+</script>
+
+</body>
+</html>
