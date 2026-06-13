@@ -95,9 +95,13 @@ border-radius:5px;
 <h2 id="deliveredCount">0</h2>
 </div></div><div class="menu"><a href="ledger.html?vendor=1">
 📒 Ledger
-</a><a href="qr.html?vendor=1">
-📱 QR Code
-</a><a href="payments.html?vendor=1">
+</a>
+const vendor =
+JSON.parse(localStorage.getItem('vendor'));
+
+window.location.href =
+'qr.html?vendor=' + vendor.id;
+<a href="payments.html?vendor=1">
 💰 Payments
 </a><a href="register.html">
 ➕ Add Vendor
