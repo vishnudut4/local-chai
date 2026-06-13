@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Vendor Login</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:20px;
+}
+
+.card{
+max-width:400px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:10px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+box-sizing:border-box;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:15px;
+background:green;
+color:white;
+border:none;
+border-radius:6px;
+font-size:16px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="card">
+
+<h2>Vendor Login</h2>
+
+<input id="mobile" placeholder="Mobile Number">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">
+Login
+</button>
+
+</div>
+
+<script>
+
+async function login(){
+
+const mobile =
+document.getElementById('mobile').value;
+
+const password =
+document.getElementById('password').value;
+
+const res = await fetch(
+'https://local-chai-api.onrender.com/api/vendor/login',
+{
+method:'POST',
+headers:{
+'Content-Type':'application/json'
+},
+body:JSON.stringify({
+mobile,
+password
+})
+}
+);
+
+const data = await res.json();
+
+if(data.success){
+
+localStorage.setItem(
+'vendorId',
+data.vendor.id
+);
+
+window.location.href =
+'../vendor-app/';
+
+}else{
+
+alert('Invalid Login');
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
