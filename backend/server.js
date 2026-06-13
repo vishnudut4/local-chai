@@ -186,6 +186,33 @@ app.get('/api/test-order', async (req, res) => {
   }
 
 });
+app.get('/api/vendor/:id/ledger', async (req,res)=>{
+
+try{
+
+const vendorId = req.params.id;
+
+const result = await pool.query(
+`
+SELECT *
+FROM ledger
+WHERE vendor_id=$1
+ORDER BY id DESC
+`,
+[vendorId]
+);
+
+res.json(result.rows);
+
+}catch(err){
+
+res.status(500).json({
+error:err.message
+});
+
+}
+
+});
 const PORT = process.env.PORT || 3000;
 app.put('/api/order/:id/delivered', async (req,res)=>{
 
