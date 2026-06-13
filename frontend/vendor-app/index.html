@@ -111,6 +111,8 @@ if(!vendor){
 window.location.href =
 '../vendor-login/';
 
+throw new Error('No vendor logged in');
+
 }
 
 const vendorId = vendor.id;
