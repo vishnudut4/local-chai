@@ -213,6 +213,37 @@ error:err.message
 }
 
 });
+app.get('/api/vendor/:id/customer-balances', async (req,res)=>{
+
+try{
+
+const vendorId = req.params.id;
+
+const result = await pool.query(
+`
+SELECT
+customer_name,
+customer_mobile,
+COALESCE(SUM(amount),0) as due
+FROM ledger
+WHERE vendor_id=$1
+GROUP BY customer_name, customer_mobile
+ORDER BY customer_name
+`,
+[vendorId]
+);
+
+res.json(result.rows);
+
+}catch(err){
+
+res.status(500).json({
+error:err.message
+});
+
+}
+
+});
 const PORT = process.env.PORT || 3000;
 app.put('/api/order/:id/delivered', async (req,res)=>{
 
