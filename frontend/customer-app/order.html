@@ -6,22 +6,28 @@
 <title>Order Tea</title>
 
 <style>
+
 body{
 font-family:Arial;
 padding:20px;
 background:#f4f4f4;
 }
+
 .card{
 background:white;
 padding:20px;
 border-radius:10px;
+max-width:500px;
+margin:auto;
 }
+
 .grid{
 display:grid;
 grid-template-columns:repeat(4,1fr);
 gap:10px;
 margin-top:15px;
 }
+
 button{
 padding:15px;
 font-size:20px;
@@ -29,24 +35,34 @@ border:none;
 border-radius:8px;
 background:#ff9800;
 color:white;
+cursor:pointer;
 }
+
 input{
 width:100%;
 padding:12px;
 margin-top:15px;
+box-sizing:border-box;
+border:1px solid #ccc;
+border-radius:8px;
+font-size:16px;
 }
+
 .big{
 width:100%;
 margin-top:15px;
 background:green;
 }
+
 </style>
+
 </head>
+
 <body>
 
 <div class="card">
 
-<h2 id="vendorName">Loading...</h2>
+<h2 id="vendorName">Loading Vendor...</h2>
 
 <input
 id="customerName"
@@ -59,19 +75,29 @@ type="text"
 placeholder="Mobile Number">
 
 <div class="grid">
+
 <button onclick="order(1)">1</button>
 <button onclick="order(2)">2</button>
 <button onclick="order(3)">3</button>
 <button onclick="order(4)">4</button>
+
 <button onclick="order(5)">5</button>
 <button onclick="order(6)">6</button>
 <button onclick="order(7)">7</button>
+
 </div>
 
-<input id="qty" type="number" placeholder="More than 7 cups">
+<input
+id="qty"
+type="number"
+placeholder="More than 7 cups">
 
-<button class="big" onclick="customOrder()">
+<button
+class="big"
+onclick="customOrder()">
+
 Place Order
+
 </button>
 
 </div>
@@ -79,49 +105,132 @@ Place Order
 <script>
 
 const params = new URLSearchParams(window.location.search);
+
 const vendorId = params.get('vendor');
 
-fetch('../../vendors.json')
-.then(r=>r.json())
-.then(vendors=>{
+// Load Vendor Name
+fetch('https://local-chai-api.onrender.com/api/vendors')
+.then(response => response.json())
+.then(vendors => {
 
 const vendor =
-vendors.find(v=>v.id == vendorId);
+vendors.find(v => v.id == vendorId);
 
 if(vendor){
+
 document.getElementById('vendorName').innerText =
 vendor.name;
+
 }
 
 });
 
-function order(cups){
+// Quick Order Buttons
+async function order(cups){
 
-alert(
-"Order Sent\nVendor ID: "
-+ vendorId +
-"\nCups: "
-+ cups
-);
+const customerName =
+document.getElementById('customerName').value;
+
+const customerMobile =
+document.getElementById('customerMobile').value;
+
+if(!customerName || !customerMobile){
+
+alert('Enter Shop Name and Mobile Number');
+
+return;
 
 }
 
-function customOrder(){
+try{
+
+const response = await fetch(
+'https://local-chai-api.onrender.com/api/order',
+{
+method:'POST',
+headers:{
+'Content-Type':'application/json'
+},
+body:JSON.stringify({
+vendor_id:Number(vendorId),
+customer_name:customerName,
+customer_mobile:customerMobile,
+cups:cups
+})
+});
+
+const data = await response.json();
+
+alert(
+'✅ Order Placed Successfully\\nOrder ID: '
++ data.id
+);
+
+}catch(error){
+
+alert('Order Failed');
+
+}
+
+}
+
+// Custom Quantity Order
+async function customOrder(){
 
 const qty =
 document.getElementById('qty').value;
 
 if(!qty){
-alert("Enter quantity");
+
+alert('Enter Quantity');
+
 return;
+
 }
 
+const customerName =
+document.getElementById('customerName').value;
+
+const customerMobile =
+document.getElementById('customerMobile').value;
+
+if(!customerName || !customerMobile){
+
+alert('Enter Shop Name and Mobile Number');
+
+return;
+
+}
+
+try{
+
+const response = await fetch(
+'https://local-chai-api.onrender.com/api/order',
+{
+method:'POST',
+headers:{
+'Content-Type':'application/json'
+},
+body:JSON.stringify({
+vendor_id:Number(vendorId),
+customer_name:customerName,
+customer_mobile:customerMobile,
+cups:Number(qty)
+})
+});
+
+const data = await response.json();
+
 alert(
-"Order Sent\nVendor ID: "
-+ vendorId +
-"\nCups: "
-+ qty
+'✅ Order Placed Successfully\\nOrder ID: '
++ data.id
 );
+
+}catch(error){
+
+alert('Order Failed');
+
+}
 
 }
 
