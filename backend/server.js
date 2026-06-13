@@ -244,7 +244,7 @@ error:err.message
 }
 
 });
-const PORT = process.env.PORT || 3000;
+
 app.put('/api/order/:id/delivered', async (req,res)=>{
 
 try{
@@ -669,6 +669,7 @@ error:err.message
 }
 
 });
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
