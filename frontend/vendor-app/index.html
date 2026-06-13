@@ -1,44 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vendor Dashboard</title>
+
 <style>
-body{font-family:Arial;padding:20px}
-.card{
-background:#eee;
+
+body{
+font-family:Arial;
+background:#f4f4f4;
 padding:15px;
-margin:10px;
-border-radius:10px;
 }
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:10px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+button{
+padding:10px;
+border:none;
+background:green;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+
 </style>
+
 </head>
+
 <body>
 
 <h1>☕ Vendor Dashboard</h1>
 
+<div id="orders"></div>
+
+<script>
+
+const vendorId = 1;
+
+async function loadOrders(){
+
+const response = await fetch(
+'https://local-chai-api.onrender.com/api/vendor/' +
+vendorId +
+'/orders'
+);
+
+const orders = await response.json();
+
+let html = '';
+
+orders.forEach(order => {
+
+html += `
 <div class="card">
-Today's Orders: 35
+
+<h3>${order.customer_name}</h3>
+
+<p>📞 ${order.customer_mobile}</p>
+
+<p>☕ Cups: ${order.cups}</p>
+
+<p>Status: ${order.status}</p>
+
+<button onclick="markDelivered(${order.id})">
+Delivered
+</button>
+
 </div>
+`;
 
-<div class="card">
-Pending Orders: 7
-</div>
+});
 
-<div class="card">
-Today's Sales: ₹1250
-</div>
+document.getElementById('orders').innerHTML =
+html;
 
-<div class="card">
-Outstanding Due: ₹4200
-</div>
+}
 
-<h2>New Orders</h2>
+async function markDelivered(orderId){
 
-<ul>
-<li>Medical Store - 5 Cups</li>
-<li>Bank Branch - 10 Cups</li>
-<li>Mobile Shop - 2 Cups</li>
-</ul>
+await fetch(
+'https://local-chai-api.onrender.com/api/order/' +
+orderId +
+'/delivered',
+{
+method:'PUT'
+}
+);
+
+loadOrders();
+
+}
+
+loadOrders();
+
+setInterval(loadOrders,5000);
+
+</script>
 
 </body>
 </html>
