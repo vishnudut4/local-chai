@@ -8,6 +8,7 @@ body{
 font-family:Arial;
 background:#f4f4f4;
 padding:15px;
+margin:0;
 }
 
 .header{
@@ -67,21 +68,18 @@ color:white;
 border:none;
 padding:10px;
 border-radius:5px;
+cursor:pointer;
+}
+
+.logout{
+width:100%;
+margin-top:10px;
+background:red;
 }
 
 </style></head><body><div class="header">
 <h2>☕ Chaiwala Vendor Dashboard</h2>
-</div><div class="stats">
-  <p>Today's Sales ₹</p>
-<h2 id="sales">0</h2>
-</div><div class="stat">
-<p>Outstanding Due ₹</p>
-<h2 id="due">0</h2>
-</div><div class="stat">
-<p>Customer Count</p>
-<h2 id="customers">0</h2>
-</div>  <div class="stat">
-  <div class="stat">
+</div><div class="stats"><div class="stat">
 <p>Today's Orders</p>
 <h2 id="ordersCount">0</h2>
 </div><div class="stat">
@@ -93,25 +91,38 @@ border-radius:5px;
 </div><div class="stat">
 <p>Delivered Orders</p>
 <h2 id="deliveredCount">0</h2>
-</div></div><div class="menu"><a href="ledger.html?vendor=1">
+</div></div><div class="menu"><a id="ledgerLink" href="#">
 📒 Ledger
-</a>
+</a><a id="qrLink" href="#">
+📱 QR Code
+</a><a id="paymentsLink" href="#">
+💰 Payments
+</a><a href="../vendor-register/">
+➕ Add Vendor
+</a></div><button class="logout" onclick="logout()">
+Logout
+</button><h3>Recent Orders</h3><div id="orders"></div><script>
+
 const vendor =
 JSON.parse(localStorage.getItem('vendor'));
 
+if(!vendor){
+
 window.location.href =
-'qr.html?vendor=' + vendor.id;
-<a href="payments.html?vendor=1">
-💰 Payments
-</a><a href="register.html">
-➕ Add Vendor
-</a></div><h3>Recent Orders</h3><div id="orders"></div><script>
+'../vendor-login/';
 
-const params =
-new URLSearchParams(window.location.search);
+}
 
-const vendorId =
-params.get('vendor') || 1;
+const vendorId = vendor.id;
+
+document.getElementById('ledgerLink').href =
+'ledger.html?vendor=' + vendorId;
+
+document.getElementById('qrLink').href =
+'qr.html?vendor=' + vendorId;
+
+document.getElementById('paymentsLink').href =
+'payments.html?vendor=' + vendorId;
 
 async function loadDashboard(){
 
@@ -125,16 +136,16 @@ const orders = await response.json();
 
 let html='';
 
-let totalOrders=orders.length;
-let totalCups=0;
-let pending=0;
-let delivered=0;
+let totalOrders = orders.length;
+let totalCups = 0;
+let pending = 0;
+let delivered = 0;
 
 orders.forEach(order=>{
 
 totalCups += Number(order.cups);
 
-if(order.status==='Pending'){
+if(order.status === 'Pending'){
 pending++;
 }else{
 delivered++;
@@ -160,18 +171,18 @@ Delivered
 
 });
 
-document.getElementById('orders').innerHTML=html;
+document.getElementById('orders').innerHTML = html;
 
-document.getElementById('ordersCount').innerText=
+document.getElementById('ordersCount').innerText =
 totalOrders;
 
-document.getElementById('cupsCount').innerText=
+document.getElementById('cupsCount').innerText =
 totalCups;
 
-document.getElementById('pendingCount').innerText=
+document.getElementById('pendingCount').innerText =
 pending;
 
-document.getElementById('deliveredCount').innerText=
+document.getElementById('deliveredCount').innerText =
 delivered;
 
 }
@@ -188,6 +199,15 @@ method:'PUT'
 );
 
 loadDashboard();
+
+}
+
+function logout(){
+
+localStorage.removeItem('vendor');
+
+window.location.href =
+'../vendor-login/';
 
 }
 
