@@ -187,7 +187,33 @@ app.get('/api/test-order', async (req, res) => {
 
 });
 const PORT = process.env.PORT || 3000;
+app.put('/api/order/:id/delivered', async (req,res)=>{
 
+try{
+
+const orderId = req.params.id;
+
+const result = await pool.query(
+`
+UPDATE orders
+SET status='Delivered'
+WHERE id=$1
+RETURNING *
+`,
+[orderId]
+);
+
+res.json(result.rows[0]);
+
+}catch(err){
+
+res.status(500).json({
+error:err.message
+});
+
+}
+
+});
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
