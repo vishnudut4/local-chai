@@ -194,7 +194,56 @@ app.post('/api/vendor/login', async (req, res) => {
 
   }
 
+});// Get All Orders
+app.get('/api/orders', async (req, res) => {
+
+  try {
+
+    const result = await pool.query(
+      'SELECT * FROM orders ORDER BY id DESC'
+    );
+
+    res.json(result.rows);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+
 });
+
+// Vendor Specific Orders
+app.get('/api/vendor/:id/orders', async (req, res) => {
+
+  try {
+
+    const vendorId = req.params.id;
+
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM orders
+      WHERE vendor_id = $1
+      ORDER BY id DESC
+      `,
+      [vendorId]
+    );
+
+    res.json(result.rows);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+
+});
+
 
 const PORT = process.env.PORT || 3000;
 
