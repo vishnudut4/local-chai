@@ -44,7 +44,19 @@ const {
   customer_mobile,
   cups
 } = req.body;
+const customerCheck = await pool.query(
+"SELECT * FROM customers WHERE vendor_id=$1 AND customer_mobile=$2",
+[vendor_id, customer_mobile]
+);
 
+if(customerCheck.rows.length === 0){
+
+await pool.query(
+"INSERT INTO customers (vendor_id, customer_name, customer_mobile) VALUES ($1,$2,$3)",
+[vendor_id, customer_name, customer_mobile]
+);
+
+}
 const result = await pool.query(
   `
   INSERT INTO orders
