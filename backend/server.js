@@ -355,6 +355,80 @@ app.get('/api/admin/orders/delivered', async (req,res)=>{
   }
 
 });
+app.post('/api/payment', async (req,res)=>{
+
+try{
+
+const {
+vendor_id,
+customer_name,
+amount
+} = req.body;
+
+const result = await pool.query(
+`
+INSERT INTO payments
+(
+vendor_id,
+customer_name,
+amount
+)
+VALUES
+($1,$2,$3)
+RETURNING *
+`,
+[
+vendor_id,
+customer_name,
+amount
+]
+);
+
+res.json(result.rows[0]);
+
+}catch(err){
+
+res.status(500).json({
+error:err.message
+});
+
+}
+
+});
+app.get('/api/vendor/:id/customer-balance', async (req,res)=>{
+
+try{
+
+const vendorId = req.params.id;
+
+const dueResult = await pool.query(
+`
+SELECT
+customer_name,
+COALESCE(SUM(amount),0) as due
+FROM ledger
+WHERE vendor_id=$1
+GROUP BY customer_name
+`,
+[vendorId]
+);
+
+const paymentResult = await pool.query(
+`
+SELECT
+customer_name,
+COALESCE(SUM(amount),0) as paid
+FROM payments
+WHERE vendor_id=$1
+GROUP BY customer_name
+`,
+[vendorId]
+);
+
+res.json({
+due: dueResult.rows,
+paid: paymentResult.rows
+});
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
