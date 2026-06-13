@@ -289,6 +289,89 @@ app.post('/api/vendor/register', async (req, res) => {
   }
 
 });
+// Total Vendors
+app.get('/api/admin/vendors/count', async (req,res)=>{
+
+  try{
+
+    const result = await pool.query(
+      'SELECT COUNT(*) FROM vendors'
+    );
+
+    res.json(result.rows[0]);
+
+  }catch(err){
+
+    res.status(500).json({
+      error:err.message
+    });
+
+  }
+
+});
+
+// Total Orders
+app.get('/api/admin/orders/count', async (req,res)=>{
+
+  try{
+
+    const result = await pool.query(
+      'SELECT COUNT(*) FROM orders'
+    );
+
+    res.json(result.rows[0]);
+
+  }catch(err){
+
+    res.status(500).json({
+      error:err.message
+    });
+
+  }
+
+});
+
+// Pending Orders
+app.get('/api/admin/orders/pending', async (req,res)=>{
+
+  try{
+
+    const result = await pool.query(
+      "SELECT COUNT(*) FROM orders WHERE status='Pending'"
+    );
+
+    res.json(result.rows[0]);
+
+  }catch(err){
+
+    res.status(500).json({
+      error:err.message
+    });
+
+  }
+
+});
+
+// Delivered Orders
+app.get('/api/admin/orders/delivered', async (req,res)=>{
+
+  try{
+
+    const result = await pool.query(
+      "SELECT COUNT(*) FROM orders WHERE status='Delivered'"
+    );
+
+    res.json(result.rows[0]);
+
+  }catch(err){
+
+    res.status(500).json({
+      error:err.message
+    });
+
+  }
+
+});
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
