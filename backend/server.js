@@ -193,44 +193,27 @@ try{
 
 const orderId = req.params.id;
 
-const result = await pool.query(
-`
-UPDATE orders
-SET status='Delivered'
-WHERE id=$1
-RETURNING *
-`,
+const orderResult = await pool.query(
+"UPDATE orders SET status='Delivered' WHERE id=$1 RETURNING *",
 [orderId]
 );
 
-res.json(result.rows[0]);
+const order = orderResult.rows[0];
 
-}catch(err){
+const amount = order.cups * 10;
 
-res.status(500).json({
-error:err.message
-});
-
-}
-
-});
-app.put('/api/order/:id/delivered', async (req,res)=>{
-
-try{
-
-const orderId = req.params.id;
-
-const result = await pool.query(
-`
-UPDATE orders
-SET status='Delivered'
-WHERE id=$1
-RETURNING *
-`,
-[orderId]
+await pool.query(
+"INSERT INTO ledger ( vendor_id, customer_name, customer_mobile, amount, type ) VALUES ($1,$2,$3,$4,$5)",
+[
+order.vendor_id,
+order.customer_name,
+order.customer_mobile,
+amount,
+'Due'
+]
 );
 
-res.json(result.rows[0]);
+res.json(order);
 
 }catch(err){
 
