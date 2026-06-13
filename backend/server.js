@@ -429,6 +429,57 @@ res.json({
 due: dueResult.rows,
 paid: paymentResult.rows
 });
+  app.get('/api/vendor/:id/dashboard', async (req,res)=>{
+
+try{
+
+const vendorId = req.params.id;
+
+// Total Sales
+const salesResult = await pool.query(
+`
+SELECT COALESCE(SUM(amount),0) as sales
+FROM ledger
+WHERE vendor_id=$1
+`,
+[vendorId]
+);
+
+// Outstanding Due
+const dueResult = await pool.query(
+`
+SELECT COALESCE(SUM(amount),0) as due
+FROM ledger
+WHERE vendor_id=$1
+`,
+[vendorId]
+);
+
+// Customer Count
+const customerResult = await pool.query(
+`
+SELECT COUNT(DISTINCT customer_mobile) as customers
+FROM ledger
+WHERE vendor_id=$1
+`,
+[vendorId]
+);
+
+res.json({
+sales:salesResult.rows[0].sales,
+due:dueResult.rows[0].due,
+customers:customerResult.rows[0].customers
+});
+
+}catch(err){
+
+res.status(500).json({
+error:err.message
+});
+
+}
+
+});
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
