@@ -80,26 +80,17 @@ password
 })
 }
 );
-
 const data = await res.json();
-
 if(data.success){
-
 localStorage.setItem(
 'vendorId',
 data.vendor.id
 );
-
 window.location.href =
 '../vendor-app/';
-
 }else{
-
 alert('Invalid Login');
-
 }
-
 </script>
-
 </body>
 </html>
