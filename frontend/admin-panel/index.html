@@ -1,56 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaiwala Admin</title>
+
 <style>
-body{font-family:Arial;padding:20px}
-.card{
-background:#ddd;
+
+body{
+font-family:Arial;
+background:#f4f4f4;
 padding:20px;
-margin:10px;
-border-radius:10px;
 }
+
+.card{
+background:white;
+padding:20px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.number{
+font-size:32px;
+font-weight:bold;
+color:green;
+}
+
 </style>
+
 </head>
+
 <body>
 
-<h1>👨‍💼 Chaiwala Admin</h1>
+<h1>☕ Chaiwala Admin</h1>
 
 <div class="card">
-Total Vendors: 52
+<p>Total Vendors</p>
+<div id="vendors" class="number">0</div>
 </div>
 
 <div class="card">
-Active Vendors: 41
+<p>Total Orders</p>
+<div id="orders" class="number">0</div>
 </div>
 
 <div class="card">
-Orders Today: 1200
+<p>Pending Orders</p>
+<div id="pending" class="number">0</div>
 </div>
 
 <div class="card">
-Monthly Revenue: ₹15600
+<p>Delivered Orders</p>
+<div id="delivered" class="number">0</div>
 </div>
 
-<h2>Vendors</h2>
+<script>
 
-<table border="1" cellpadding="10">
-<tr>
-<th>Name</th>
-<th>Status</th>
-</tr>
+async function loadDashboard(){
 
-<tr>
-<td>Raju Tea Stall</td>
-<td>Active</td>
-</tr>
+const vendorData =
+await fetch(
+'https://local-chai-api.onrender.com/api/admin/vendors/count'
+).then(r=>r.json());
 
-<tr>
-<td>Chotu Tea Point</td>
-<td>Active</td>
-</tr>
+const orderData =
+await fetch(
+'https://local-chai-api.onrender.com/api/admin/orders/count'
+).then(r=>r.json());
 
-</table>
+const pendingData =
+await fetch(
+'https://local-chai-api.onrender.com/api/admin/orders/pending'
+).then(r=>r.json());
+
+const deliveredData =
+await fetch(
+'https://local-chai-api.onrender.com/api/admin/orders/delivered'
+).then(r=>r.json());
+
+document.getElementById('vendors').innerText =
+vendorData.count;
+
+document.getElementById('orders').innerText =
+orderData.count;
+
+document.getElementById('pending').innerText =
+pendingData.count;
+
+document.getElementById('delivered').innerText =
+deliveredData.count;
+
+}
+
+loadDashboard();
+
+</script>
 
 </body>
 </html>
