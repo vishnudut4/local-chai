@@ -241,6 +241,54 @@ error:err.message
 }
 
 });
+// Vendor Registration
+app.post('/api/vendor/register', async (req, res) => {
+
+  try {
+
+    const {
+      name,
+      mobile,
+      city,
+      password
+    } = req.body;
+
+    const result = await pool.query(
+      `
+      INSERT INTO vendors
+      (
+        name,
+        mobile,
+        city,
+        password,
+        subscription_expiry
+      )
+      VALUES
+      (
+        $1,$2,$3,$4,
+        CURRENT_DATE + INTERVAL '30 days'
+      )
+      RETURNING *
+      `,
+      [
+        name,
+        mobile,
+        city,
+        password
+      ]
+    );
+
+    res.json(result.rows[0]);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message
+    });
+
+  }
+
+});
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
