@@ -42,7 +42,13 @@ cursor:pointer;
 
 <script>
 
-const vendorId = 1;
+const params =
+new URLSearchParams(
+window.location.search
+);
+
+const vendorId =
+params.get('vendor');
 
 async function loadOrders(){
 
