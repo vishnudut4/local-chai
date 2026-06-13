@@ -494,7 +494,7 @@ const salesResult = await pool.query(
 );
 
 const customerResult = await pool.query(
-"SELECT COUNT(DISTINCT customer_mobile) as customers FROM ledger WHERE vendor_id=$1",
+"SELECT COUNT(DISTINCT customer_name) as customers FROM ledger WHERE vendor_id=$1",
 [vendorId]
 );
 
