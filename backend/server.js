@@ -214,6 +214,33 @@ error:err.message
 }
 
 });
+app.put('/api/order/:id/delivered', async (req,res)=>{
+
+try{
+
+const orderId = req.params.id;
+
+const result = await pool.query(
+`
+UPDATE orders
+SET status='Delivered'
+WHERE id=$1
+RETURNING *
+`,
+[orderId]
+);
+
+res.json(result.rows[0]);
+
+}catch(err){
+
+res.status(500).json({
+error:err.message
+});
+
+}
+
+});
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
