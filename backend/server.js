@@ -538,7 +538,7 @@ error:err.message
 }
 
 });
-  app.get('/api/vendor/:id/customer-balance', async (req,res)=>{
+app.get('/api/vendor/:id/customer-balance', async (req,res)=>{
 
 try{
 
