@@ -116,5 +116,27 @@ console.log(data);
 
 </script>
 
+<script>
+
+const API_URL = "https://your-backend-url.onrender.com";
+
+async function loadVendors() {
+  try {
+
+    const response = await fetch(`${API_URL}/api/vendors`);
+    const vendors = await response.json();
+
+    console.log(vendors);
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+loadVendors();
+
+</script>
+  
+
 </body>
 </html>
