@@ -1,221 +1,628 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chaiwala Vendor Dashboard</title><style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Dashboard - Chaiwala</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-body{
-font-family:Arial;
-background:#f4f4f4;
-padding:15px;
-margin:0;
-}
+        body {
+            background: linear-gradient(135deg, #f5e6d3 0%, #e8d5c4 100%);
+            color: #333;
+        }
 
-.header{
-background:#ff9800;
-color:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-}
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-.stats{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin-bottom:15px;
-}
+        header {
+            background: linear-gradient(135deg, #6f4e37 0%, #4a3728 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
 
-.stat{
-background:white;
-padding:15px;
-border-radius:10px;
-text-align:center;
-}
+        header h1 {
+            font-size: 32px;
+        }
 
-.stat h2{
-margin:0;
-color:green;
-}
+        .logout-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
 
-.menu{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin-bottom:15px;
-}
+        .logout-btn:hover {
+            background: white;
+            color: #6f4e37;
+        }
 
-.menu a{
-background:white;
-padding:15px;
-text-align:center;
-text-decoration:none;
-color:black;
-border-radius:10px;
-font-weight:bold;
-}
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-.order{
-background:white;
-padding:15px;
-margin-bottom:10px;
-border-radius:10px;
-}
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 5px solid #6f4e37;
+        }
 
-button{
-background:green;
-color:white;
-border:none;
-padding:10px;
-border-radius:5px;
-cursor:pointer;
-}
+        .stat-card h3 {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
 
-.logout{
-width:100%;
-margin-top:10px;
-background:red;
-}
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #6f4e37;
+        }
 
-</style></head><body><div class="header">
-<h2>☕ Chaiwala Vendor Dashboard</h2>
-</div><div class="stats"><div class="stat">
-<p>Today's Orders</p>
-<h2 id="ordersCount">0</h2>
-</div><div class="stat">
-<p>Today's Cups</p>
-<h2 id="cupsCount">0</h2>
-</div><div class="stat">
-<p>Pending Orders</p>
-<h2 id="pendingCount">0</h2>
-</div><div class="stat">
-<p>Delivered Orders</p>
-<h2 id="deliveredCount">0</h2>
-</div></div><div class="menu"><a id="ledgerLink" href="#">
-📒 Ledger
-</a><a id="qrLink" href="#">
-📱 QR Code
-</a><a id="paymentsLink" href="#">
-💰 Payments
-</a><a href="../vendor-register/">
-➕ Add Vendor
-</a></div><button class="logout" onclick="logout()">
-Logout
-</button><h3>Recent Orders</h3><div id="orders"></div><script>
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
 
-const vendor =
-JSON.parse(localStorage.getItem('vendor'));
+        .tab-btn {
+            padding: 12px 25px;
+            background: white;
+            color: #333;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
 
-if(!vendor){
+        .tab-btn.active {
+            background: linear-gradient(135deg, #6f4e37 0%, #4a3728 100%);
+            color: white;
+            border-color: #6f4e37;
+        }
 
-window.location.href =
-'../vendor-login/';
+        .tab-btn:hover {
+            border-color: #6f4e37;
+        }
 
-throw new Error('No vendor logged in');
+        .section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-in;
+        }
 
-}
+        .section.active {
+            display: block;
+        }
 
-const vendorId = vendor.id;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-document.getElementById('ledgerLink').href =
-'ledger.html?vendor=' + vendorId;
+        h2 {
+            color: #6f4e37;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #6f4e37;
+            padding-bottom: 10px;
+        }
 
-document.getElementById('qrLink').href =
-'qr.html?vendor=' + vendorId;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-document.getElementById('paymentsLink').href =
-'payments.html?vendor=' + vendorId;
+        table th {
+            background: #6f4e37;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
 
-async function loadDashboard(){
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
 
-const response = await fetch(
-'https://local-chai-api.onrender.com/api/vendor/' +
-vendorId +
-'/orders'
-);
+        table tr:hover {
+            background: #f9f9f9;
+        }
 
-const orders = await response.json();
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
 
-let html='';
+        .btn-primary {
+            background: #6f4e37;
+            color: white;
+        }
 
-let totalOrders = orders.length;
-let totalCups = 0;
-let pending = 0;
-let delivered = 0;
+        .btn-primary:hover {
+            background: #4a3728;
+        }
 
-orders.forEach(order=>{
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
 
-totalCups += Number(order.cups);
+        .btn-success:hover {
+            background: #218838;
+        }
 
-if(order.status === 'Pending'){
-pending++;
-}else{
-delivered++;
-}
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
 
-html += `
-<div class="order">
+        .btn-danger:hover {
+            background: #c82333;
+        }
 
-<h3>${order.customer_name}</h3>
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
 
-<p>📞 ${order.customer_mobile}</p>
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
 
-<p>☕ ${order.cups} Cups</p>
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-<p>Status: ${order.status}</p>
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a3728;
+        }
 
-<button onclick="markDelivered(${order.id})">
-Delivered
-</button>
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
 
-</div>
-`;
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #6f4e37;
+        }
 
-});
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
 
-document.getElementById('orders').innerHTML = html;
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
 
-document.getElementById('ordersCount').innerText =
-totalOrders;
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
 
-document.getElementById('cupsCount').innerText =
-totalCups;
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
 
-document.getElementById('pendingCount').innerText =
-pending;
+        .search-box input {
+            flex: 1;
+            max-width: 300px;
+        }
 
-document.getElementById('deliveredCount').innerText =
-delivered;
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-}
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
 
-async function markDelivered(orderId){
+            table {
+                font-size: 14px;
+            }
 
-await fetch(
-'https://local-chai-api.onrender.com/api/order/' +
-orderId +
-'/delivered',
-{
-method:'PUT'
-}
-);
+            table th, table td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>☕ Vendor Dashboard</h1>
+                <p id="vendorName" style="font-size: 14px; opacity: 0.9;"></p>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </header>
 
-loadDashboard();
+        <!-- Dashboard Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <h3>Today's Sales</h3>
+                <div class="value" id="salesValue">₹0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Customers</h3>
+                <div class="value" id="customersValue">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pending Orders</h3>
+                <div class="value" id="pendingValue">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Delivered Orders</h3>
+                <div class="value" id="deliveredValue">0</div>
+            </div>
+        </div>
 
-}
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showSection('orders', event)">📦 Orders</button>
+            <button class="tab-btn" onclick="showSection('ledger', event)">📋 Ledger</button>
+            <button class="tab-btn" onclick="showSection('customers', event)">👥 Customers</button>
+            <button class="tab-btn" onclick="showSection('payments', event)">💰 Payments</button>
+        </div>
 
-function logout(){
+        <!-- Orders Section -->
+        <div id="orders" class="section active">
+            <h2>📦 Orders Management</h2>
+            <div id="ordersAlert"></div>
+            <div class="search-box">
+                <input type="text" id="orderSearch" placeholder="Search by customer name or mobile..." onkeyup="filterOrders()">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Mobile</th>
+                        <th>Cups</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTable">
+                    <tr><td colspan="7" style="text-align: center; padding: 30px;">Loading orders...</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-localStorage.removeItem('vendor');
+        <!-- Ledger Section -->
+        <div id="ledger" class="section">
+            <h2>📋 Customer Ledger</h2>
+            <div id="ledgerAlert"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Mobile</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="ledgerTable">
+                    <tr><td colspan="5" style="text-align: center; padding: 30px;">Loading ledger...</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-window.location.href =
-'../vendor-login/';
+        <!-- Customers Section -->
+        <div id="customers" class="section">
+            <h2>👥 Customer Balances</h2>
+            <div id="customersAlert"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Mobile</th>
+                        <th>Total Due</th>
+                    </tr>
+                </thead>
+                <tbody id="customersTable">
+                    <tr><td colspan="3" style="text-align: center; padding: 30px;">Loading customers...</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-}
+        <!-- Payments Section -->
+        <div id="payments" class="section">
+            <h2>💰 Record Payment</h2>
+            <div id="paymentAlert"></div>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+                <div class="form-group">
+                    <label>Customer Name *</label>
+                    <input type="text" id="paymentCustomer" placeholder="Enter customer name">
+                </div>
+                <div class="form-group">
+                    <label>Amount (₹) *</label>
+                    <input type="number" id="paymentAmount" placeholder="Enter amount" min="1">
+                </div>
+                <button class="btn btn-primary" onclick="recordPayment()" style="width: 100%; padding: 12px;">Record Payment</button>
+            </div>
 
-loadDashboard();
+            <h2 style="margin-top: 40px;">Payment History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentTable">
+                    <tr><td colspan="3" style="text-align: center; padding: 30px;">Loading payments...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-setInterval(loadDashboard,5000);
+    <script>
+        const API_URL = 'https://local-chai-api.onrender.com';
+        let vendor = null;
+        let allOrders = [];
 
-</script></body>
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            checkVendorAuth();
+            loadDashboard();
+            setInterval(loadDashboard, 30000); // Refresh every 30 seconds
+        });
+
+        function checkVendorAuth() {
+            vendor = JSON.parse(localStorage.getItem('vendor'));
+            if (!vendor) {
+                window.location.href = '../vendor-login/';
+                return;
+            }
+            document.getElementById('vendorName').textContent = `${vendor.name} - ${vendor.city}`;
+        }
+
+        async function loadDashboard() {
+            try {
+                // Load orders
+                const ordersRes = await fetch(`${API_URL}/api/vendor/${vendor.id}/orders`);
+                allOrders = await ordersRes.json();
+                loadOrders();
+
+                // Load ledger
+                const ledgerRes = await fetch(`${API_URL}/api/vendor/${vendor.id}/ledger`);
+                const ledger = await ledgerRes.json();
+                loadLedger(ledger);
+
+                // Load customers
+                const customersRes = await fetch(`${API_URL}/api/vendor/${vendor.id}/customer-balances`);
+                const customers = await customersRes.json();
+                loadCustomers(customers);
+
+                // Load dashboard stats
+                const dashboardRes = await fetch(`${API_URL}/api/vendor/${vendor.id}/dashboard`);
+                const dashboardStats = await dashboardRes.json();
+                document.getElementById('salesValue').textContent = '₹' + dashboardStats.sales;
+                document.getElementById('customersValue').textContent = customers.length;
+
+                const pending = allOrders.filter(o => o.status === 'Pending').length;
+                const delivered = allOrders.filter(o => o.status === 'Delivered').length;
+                document.getElementById('pendingValue').textContent = pending;
+                document.getElementById('deliveredValue').textContent = delivered;
+            } catch (err) {
+                console.error('Error loading dashboard:', err);
+            }
+        }
+
+        function loadOrders() {
+            let html = '';
+            if (allOrders.length === 0) {
+                html = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No orders found</td></tr>';
+            } else {
+                allOrders.forEach(order => {
+                    const price = vendor.price || 10;
+                    const amount = order.cups * price;
+                    const date = new Date(order.created_at).toLocaleDateString();
+                    html += `
+                        <tr>
+                            <td>#${order.id}</td>
+                            <td>${order.customer_name}</td>
+                            <td>${order.customer_mobile}</td>
+                            <td>${order.cups}</td>
+                            <td><span class="status-${order.status === 'Pending' ? 'pending' : 'delivered'}">${order.status}</span></td>
+                            <td>${date}</td>
+                            <td>
+                                ${order.status === 'Pending' ? `<button class="btn btn-success" onclick="markDelivered(${order.id})">Mark Delivered</button>` : 'Completed'}
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('ordersTable').innerHTML = html;
+        }
+
+        function loadLedger(ledger) {
+            let html = '';
+            if (ledger.length === 0) {
+                html = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #999;">No ledger entries</td></tr>';
+            } else {
+                ledger.forEach(entry => {
+                    const date = new Date(entry.created_at).toLocaleDateString();
+                    html += `
+                        <tr>
+                            <td>${entry.customer_name}</td>
+                            <td>${entry.customer_mobile}</td>
+                            <td>₹${entry.amount}</td>
+                            <td>${entry.type}</td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('ledgerTable').innerHTML = html;
+        }
+
+        function loadCustomers(customers) {
+            let html = '';
+            if (customers.length === 0) {
+                html = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: #999;">No customers</td></tr>';
+            } else {
+                customers.forEach(customer => {
+                    html += `
+                        <tr>
+                            <td>${customer.customer_name}</td>
+                            <td>${customer.customer_mobile}</td>
+                            <td><strong>₹${customer.due}</strong></td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('customersTable').innerHTML = html;
+        }
+
+        async function markDelivered(orderId) {
+            try {
+                const res = await fetch(`${API_URL}/api/order/${orderId}/delivered`, { method: 'PUT' });
+                if (res.ok) {
+                    document.getElementById('ordersAlert').innerHTML = '<div class="alert alert-success">✓ Order marked as delivered</div>';
+                    loadDashboard();
+                    setTimeout(() => {
+                        document.getElementById('ordersAlert').innerHTML = '';
+                    }, 3000);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function recordPayment() {
+            const customer = document.getElementById('paymentCustomer').value;
+            const amount = document.getElementById('paymentAmount').value;
+            const alertDiv = document.getElementById('paymentAlert');
+
+            if (!customer || !amount) {
+                alertDiv.innerHTML = '<div class="alert alert-error">✗ Please fill all fields</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        vendor_id: vendor.id,
+                        customer_name: customer,
+                        amount: parseInt(amount)
+                    })
+                });
+
+                if (res.ok) {
+                    alertDiv.innerHTML = '<div class="alert alert-success">✓ Payment recorded successfully</div>';
+                    document.getElementById('paymentCustomer').value = '';
+                    document.getElementById('paymentAmount').value = '';
+                    loadDashboard();
+                    setTimeout(() => alertDiv.innerHTML = '', 3000);
+                }
+            } catch (err) {
+                alertDiv.innerHTML = `<div class="alert alert-error">✗ Error: ${err.message}</div>`;
+            }
+        }
+
+        function filterOrders() {
+            const search = document.getElementById('orderSearch').value.toLowerCase();
+            const filtered = allOrders.filter(o => 
+                o.customer_name.toLowerCase().includes(search) || 
+                o.customer_mobile.includes(search)
+            );
+            allOrders = filtered;
+            loadOrders();
+            if (filtered.length === 0) {
+                allOrders = [];
+                loadOrders();
+            }
+        }
+
+        function showSection(sectionId, event) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('vendor');
+            window.location.href = '../vendor-login/';
+        }
+    </script>
+</body>
 </html>
