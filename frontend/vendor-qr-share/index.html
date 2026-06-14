@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Vendor QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5e6d3 0%, #e8d5c4 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #6f4e37 0%, #4a3728 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card h2 {
+            color: #6f4e37;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6f4e37 0%, #4a3728 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(111, 78, 55, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: slideIn 0.3s ease-in;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            width: auto;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal h2 {
+            color: #6f4e37;
+            margin-bottom: 20px;
+            margin-top: 10px;
+        }
+
+        .share-method {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #6f4e37;
+        }
+
+        .share-method h3 {
+            color: #4a3728;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .share-method p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .share-method button {
+            margin-bottom: 10px;
+        }
+
+        .copy-input {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .copy-btn {
+            background: #6f4e37;
+            padding: 8px 15px;
+            margin-top: 10px;
+        }
+
+        .qr-preview {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        #previewQr {
+            display: inline-block;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease-in;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #6f4e37;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a3728;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6f4e37;
+        }
+
+        .step {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #6f4e37;
+        }
+
+        .step strong {
+            color: #6f4e37;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .social-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+        }
+
+        .whatsapp-btn:hover {
+            background: #1ebd59;
+        }
+
+        .email-btn {
+            background: #EA4335;
+            color: white;
+        }
+
+        .email-btn:hover {
+            background: #c5221f;
+        }
+
+        .sms-btn {
+            background: #007AFF;
+            color: white;
+        }
+
+        .sms-btn:hover {
+            background: #0051BA;
+        }
+
+        .print-btn {
+            background: #666;
+            color: white;
+        }
+
+        .print-btn:hover {
+            background: #555;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .modal-content {
+                box-shadow: none;
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 24px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📤 Share Your QR Code</h1>
+            <p>Multiple ways to share your unique vendor QR code with customers</p>
+        </header>
+
+        <div id="alert" class="alert"></div>
+
+        <!-- Sharing Methods Grid -->
+        <div class="grid">
+            <!-- WhatsApp Sharing -->
+            <div class="card">
+                <div class="card-icon">📱</div>
+                <h2>WhatsApp</h2>
+                <p>Share directly to customers, groups, and broadcast lists. Quick and easy!</p>
+                <button onclick="openModal('whatsapp')">Share via WhatsApp</button>
+            </div>
+
+            <!-- Email Sharing -->
+            <div class="card">
+                <div class="card-icon">📧</div>
+                <h2>Email</h2>
+                <p>Send QR code with details to customers' email addresses.</p>
+                <button onclick="openModal('email')">Share via Email</button>
+            </div>
+
+            <!-- SMS Sharing -->
+            <div class="card">
+                <div class="card-icon">💬</div>
+                <h2>SMS / Text</h2>
+                <p>Send QR link via SMS to customer phone numbers.</p>
+                <button onclick="openModal('sms')">Share via SMS</button>
+            </div>
+
+            <!-- Print QR -->
+            <div class="card">
+                <div class="card-icon">🖨️</div>
+                <h2>Print & Display</h2>
+                <p>Print high-quality QR code posters for your shop.</p>
+                <button onclick="openModal('print')">Print QR Code</button>
+            </div>
+
+            <!-- Copy Link -->
+            <div class="card">
+                <div class="card-icon">📋</div>
+                <h2>Copy Link</h2>
+                <p>Copy QR link to clipboard and share anywhere.</p>
+                <button onclick="openModal('copy')">Copy Link</button>
+            </div>
+
+            <!-- Social Media -->
+            <div class="card">
+                <div class="card-icon">🌐</div>
+                <h2>Social Media</h2>
+                <p>Share on Facebook, Instagram, or other platforms.</p>
+                <button onclick="openModal('social')">Share on Social Media</button>
+            </div>
+        </div>
+
+        <!-- Modals -->
+
+        <!-- WhatsApp Modal -->
+        <div id="whatsappModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeModal('whatsapp')">✕</button>
+                <h2>📱 Share via WhatsApp</h2>
+
+                <div class="info-box">
+                    Share your QR code with customers via WhatsApp. They can scan and order instantly!
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Name *</label>
+                    <input type="text" id="waVendorName" placeholder="e.g., Raju Tea Stall" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Mobile *</label>
+                    <input type="tel" id="waVendorMobile" placeholder="e.g., 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor ID *</label>
+                    <input type="number" id="waVendorId" placeholder="e.g., 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="waCity" placeholder="e.g., Rajsamand" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Price per Cup (₹) *</label>
+                    <input type="number" id="waPrice" placeholder="e.g., 10" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Customer Mobile (Optional - to send directly)</label>
+                    <input type="tel" id="customerPhone" placeholder="e.g., 9876543210">
+                </div>
+
+                <button onclick="shareWhatsApp()">📱 Share via WhatsApp</button>
+
+                <div class="step" style="margin-top: 20px;">
+                    <strong>💡 How it works:</strong><br>
+                    1. Fill in your vendor details<br>
+                    2. Click "Share via WhatsApp"<br>
+                    3. WhatsApp opens with pre-written message<br>
+                    4. Select recipient and send!
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Modal -->
+        <div id="emailModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeModal('email')">✕</button>
+                <h2>📧 Share via Email</h2>
+
+                <div class="info-box">
+                    Send QR code details to customers via email with attachments.
+                </div>
+
+                <div class="form-group">
+                    <label>Your Name *</label>
+                    <input type="text" id="emailSenderName" placeholder="Your name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Mobile *</label>
+                    <input type="tel" id="emailVendorMobile" placeholder="e.g., 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor ID *</label>
+                    <input type="number" id="emailVendorId" placeholder="e.g., 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="emailCity" placeholder="e.g., Rajsamand" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Price per Cup (₹) *</label>
+                    <input type="number" id="emailPrice" placeholder="e.g., 10" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Recipient Email Address *</label>
+                    <input type="email" id="recipientEmail" placeholder="customer@example.com" required>
+                </div>
+
+                <button onclick="shareEmail()">📧 Send Email</button>
+
+                <div class="step" style="margin-top: 20px;">
+                    <strong>💡 What they'll receive:</strong><br>
+                    • Your QR code as attachment<br>
+                    • Shop details (name, price, location)<br>
+                    • Direct ordering link<br>
+                    • Instructions to scan and order
+                </div>
+            </div>
+        </div>
+
+        <!-- SMS Modal -->
+        <div id="smsModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeModal('sms')">✕</button>
+                <h2>💬 Share via SMS</h2>
+
+                <div class="info-box">
+                    Send QR link via text message to customer phone numbers.
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Mobile *</label>
+                    <input type="tel" id="smsVendorMobile" placeholder="e.g., 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor ID *</label>
+                    <input type="number" id="smsVendorId" placeholder="e.g., 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="smsCity" placeholder="e.g., Rajsamand" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Price per Cup (₹) *</label>
+                    <input type="number" id="smsPrice" placeholder="e.g., 10" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Vendor Name *</label>
+                    <input type="text" id="smsVendorName" placeholder="e.g., Raju Tea Stall" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Recipient Phone Number *</label>
+                    <input type="tel" id="recipientPhone" placeholder="e.g., 9876543210" required>
+                </div>
+
+                <button onclick="shareSMS()">💬 Send SMS</button>
+
+                <div class="step" style="margin-top: 20px;">
+                    <strong>💡 Preview message:</strong><br>
+                    <div style="background: white; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 10px; font-size: 13px;">
+                        🛍️ Order from [Vendor Name]<br>
+                        📱 Scan: [QR Link]<br>
+                        💰 ₹[Price]/cup<br>
+                        📍 [City]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Print Modal -->
+        <div id="printModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeModal('print')">✕</button>
+                <h2>🖨️ Print QR Code</h2>
+
+                <div class="info-box">
+                    Generate a printable poster with your QR code for shop display.
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Name *</label>
+                    <input type="text" id="printVendorName" placeholder="e.g., Raju Tea Stall" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Mobile *</label>
+                    <input type="tel" id="printVendorMobile" placeholder="e.g., 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor ID *</label>
+                    <input type="number" id="printVendorId" placeholder="e.g., 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="printCity" placeholder="e.g., Rajsamand" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Price per Cup (₹) *</label>
+                    <input type="number" id="printPrice" placeholder="e.g., 10" required>
+                </div>
+
+                <div class="qr-preview">
+                    <div id="printQrCode"></div>
+                </div>
+
+                <div class="social-buttons">
+                    <button onclick="generatePrintPreview()" style="background: #6f4e37;">👁️ Preview</button>
+                    <button onclick="printQRPoster()" style="background: #666;">🖨️ Print Now</button>
+                </div>
+
+                <div class="step" style="margin-top: 20px;">
+                    <strong>💡 Tips:</strong><br>
+                    • Print in color for best results<br>
+                    • Use A4 paper for shop display<br>
+                    • Laminate for durability<br>
+                    • Hang near counter for easy scanning
+                </div>
+            </div>
+        </div>
+
+        <!-- Copy Link Modal -->
+        <div id="copyModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeModal('copy')">✕</button>
+                <h2>📋 Copy QR Link</h2>
+
+                <div class="info-box">
+                    Copy your QR link to clipboard and paste anywhere you want.
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Name *</label>
+                    <input type="text" id="copyVendorName" placeholder="e.g., Raju Tea Stall" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Mobile *</label>
+                    <input type="tel" id="copyVendorMobile" placeholder="e.g., 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor ID *</label>
+                    <input type="number" id="copyVendorId" placeholder="e.g., 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="copyCity" placeholder="e.g., Rajsamand" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Price per Cup (₹) *</label>
+                    <input type="number" id="copyPrice" placeholder="e.g., 10" required>
+                </div>
+
+                <button onclick="generateQRLink()">🔗 Generate Link</button>
+
+                <div id="linkDisplay" style="display: none;">
+                    <div class="copy-input" id="generatedLink"></div>
+                    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy Link</button>
+
+                    <div class="step" style="margin-top: 20px;">
+                        <strong>💡 Where to use:</strong><br>
+                        • Google Business profile<br>
+                        • Facebook page<br>
+                        • Instagram bio<br>
+                        • WhatsApp status<br>
+                        • Website or blog
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Media Modal -->
+        <div id="socialModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn" onclick="closeModal('social')">✕</button>
+                <h2>🌐 Share on Social Media</h2>
+
+                <div class="info-box">
+                    Share your QR code on multiple social platforms.
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Name *</label>
+                    <input type="text" id="socialVendorName" placeholder="e.g., Raju Tea Stall" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor Mobile *</label>
+                    <input type="tel" id="socialVendorMobile" placeholder="e.g., 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Vendor ID *</label>
+                    <input type="number" id="socialVendorId" placeholder="e.g., 1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="socialCity" placeholder="e.g., Rajsamand" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Price per Cup (₹) *</label>
+                    <input type="number" id="socialPrice" placeholder="e.g., 10" required>
+                </div>
+
+                <div class="qr-preview">
+                    <div id="socialQrCode"></div>
+                </div>
+
+                <div class="social-buttons" style="margin-top: 20px;">
+                    <button class="social-btn whatsapp-btn" onclick="shareOnWhatsApp()">WhatsApp</button>
+                    <button class="social-btn email-btn" onclick="shareOnEmail()">Email</button>
+                </div>
+
+                <div class="step" style="margin-top: 20px;">
+                    <strong>💡 Social Media Tips:</strong><br>
+                    • Add caption: "Scan to order! Easy & Fast"<br>
+                    • Post during peak hours<br>
+                    • Include location tag<br>
+                    • Share regularly to reach more customers
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(type) {
+            document.getElementById(type + 'Modal').classList.add('active');
+        }
+
+        function closeModal(type) {
+            document.getElementById(type + 'Modal').classList.remove('active');
+        }
+
+        function generateQRLink(vendorId, vendorName, vendorMobile, vendorCity, vendorPrice) {
+            const baseURL = window.location.origin + window.location.pathname.replace('vendor-qr-share', 'qr-scanner');
+            return `${baseURL}?vendorId=${vendorId}&vendorName=${encodeURIComponent(vendorName)}&vendorMobile=${vendorMobile}&vendorCity=${encodeURIComponent(vendorCity)}&vendorPrice=${vendorPrice}`;
+        }
+
+        // WhatsApp Sharing
+        function shareWhatsApp() {
+            const vendorName = document.getElementById('waVendorName').value;
+            const vendorMobile = document.getElementById('waVendorMobile').value;
+            const vendorId = document.getElementById('waVendorId').value;
+            const city = document.getElementById('waCity').value;
+            const price = document.getElementById('waPrice').value;
+            const customerPhone = document.getElementById('customerPhone').value;
+
+            if (!vendorName || !vendorMobile || !vendorId || !city || !price) {
+                showAlert('❌ Please fill all required fields!', 'error');
+                return;
+            }
+
+            const qrLink = generateQRLink(vendorId, vendorName, vendorMobile, city, price);
+            const message = `🛍️ *Order from ${vendorName}*\n\n📱 *Scan to order:* ${qrLink}\n\n☕ *Price:* ₹${price}/cup\n📍 *Location:* ${city}\n📞 *Contact:* ${vendorMobile}\n\n✅ Quick, Easy & Delicious!`;
+
+            if (customerPhone) {
+                const whatsappURL = `https://wa.me/${customerPhone}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappURL, '_blank');
+            } else {
+                const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(whatsappURL, '_blank');
+            }
+
+            showAlert('✅ Opening WhatsApp...', 'success');
+            closeModal('whatsapp');
+        }
+
+        // Email Sharing
+        function shareEmail() {
+            const senderName = document.getElementById('emailSenderName').value;
+            const vendorMobile = document.getElementById('emailVendorMobile').value;
+            const vendorId = document.getElementById('emailVendorId').value;
+            const city = document.getElementById('emailCity').value;
+            const price = document.getElementById('emailPrice').value;
+            const recipientEmail = document.getElementById('recipientEmail').value;
+
+            if (!senderName || !vendorMobile || !vendorId || !city || !price || !recipientEmail) {
+                showAlert('❌ Please fill all required fields!', 'error');
+                return;
+            }
+
+            const qrLink = generateQRLink(vendorId, senderName, vendorMobile, city, price);
+            const subject = `🛍️ Order from ${senderName} - Quick QR Code`;
+            const body = `Hello,\n\nI'd love to have you order from my shop!\n\n*Shop Details:*\n- Name: ${senderName}\n- Location: ${city}\n- Price: ₹${price}/cup\n- Phone: ${vendorMobile}\n\n*How to Order:*\n1. Click the link below\n2. Enter your name and phone\n3. Select quantity\n4. Place order!\n\n${qrLink}\n\nThanks!`;
+
+            const mailtoURL = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(mailtoURL, '_blank');
+
+            showAlert('✅ Opening email client...', 'success');
+            closeModal('email');
+        }
+
+        // SMS Sharing
+        function shareSMS() {
+            const vendorName = document.getElementById('smsVendorName').value;
+            const vendorMobile = document.getElementById('smsVendorMobile').value;
+            const vendorId = document.getElementById('smsVendorId').value;
+            const city = document.getElementById('smsCity').value;
+            const price = document.getElementById('smsPrice').value;
+            const recipientPhone = document.getElementById('recipientPhone').value;
+
+            if (!vendorName || !vendorMobile || !vendorId || !city || !price || !recipientPhone) {
+                showAlert('❌ Please fill all required fields!', 'error');
+                return;
+            }
+
+            const qrLink = generateQRLink(vendorId, vendorName, vendorMobile, city, price);
+            const message = `🛍️ Order from ${vendorName}\n${qrLink}\n💰 ₹${price}/cup | 📍 ${city}`;
+
+            const smsURL = `sms:${recipientPhone}?body=${encodeURIComponent(message)}`;
+            window.open(smsURL, '_blank');
+
+            showAlert('✅ Opening SMS...', 'success');
+            closeModal('sms');
+        }
+
+        // Print QR
+        function generatePrintPreview() {
+            const vendorName = document.getElementById('printVendorName').value;
+            const vendorMobile = document.getElementById('printVendorMobile').value;
+            const vendorId = document.getElementById('printVendorId').value;
+            const city = document.getElementById('printCity').value;
+            const price = document.getElementById('printPrice').value;
+
+            if (!vendorName || !vendorMobile || !vendorId || !city || !price) {
+                showAlert('❌ Please fill all required fields!', 'error');
+                return;
+            }
+
+            const qrLink = generateQRLink(vendorId, vendorName, vendorMobile, city, price);
+            document.getElementById('printQrCode').innerHTML = '';
+            new QRCode(document.getElementById('printQrCode'), {
+                text: qrLink,
+                width: 300,
+                height: 300,
+                colorDark: '#6f4e37',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            showAlert('✅ Preview generated!', 'success');
+        }
+
+        function printQRPoster() {
+            const vendorName = document.getElementById('printVendorName').value;
+            const price = document.getElementById('printPrice').value;
+            const city = document.getElementById('printCity').value;
+
+            if (!vendorName) {
+                showAlert('❌ Please fill vendor details!', 'error');
+                return;
+            }
+
+            const canvas = document.querySelector('#printQrCode canvas');
+            if (!canvas) {
+                showAlert('❌ Generate preview first!', 'error');
+                return;
+            }
+
+            const img = canvas.toDataURL('image/png');
+            const printWindow = window.open('', '', 'width=800,height=1000');
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print QR Code</title>
+                    <style>
+                        body {
+                            text-align: center;
+                            font-family: Arial, sans-serif;
+                            padding: 40px;
+                            background: white;
+                            margin: 0;
+                        }
+                        h1 { color: #6f4e37; font-size: 48px; margin: 20px 0; }
+                        h2 { color: #4a3728; font-size: 36px; margin: 20px 0; }
+                        img { width: 400px; height: 400px; margin: 30px 0; }
+                        p { font-size: 20px; margin: 10px 0; color: #333; }
+                        .details { font-size: 18px; margin-top: 30px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>☕ ${vendorName}</h1>
+                    <h2>📱 Scan to Order</h2>
+                    <img src="${img}" />
+                    <div class="details">
+                        <p>💰 Price: ₹${price}/cup</p>
+                        <p>📍 Location: ${city}</p>
+                        <p>✅ Quick, Easy & Fresh!</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            setTimeout(() => printWindow.print(), 500);
+        }
+
+        // Copy Link
+        function generateQRLink() {
+            const vendorName = document.getElementById('copyVendorName').value;
+            const vendorMobile = document.getElementById('copyVendorMobile').value;
+            const vendorId = document.getElementById('copyVendorId').value;
+            const city = document.getElementById('copyCity').value;
+            const price = document.getElementById('copyPrice').value;
+
+            if (!vendorName || !vendorMobile || !vendorId || !city || !price) {
+                showAlert('❌ Please fill all required fields!', 'error');
+                return;
+            }
+
+            const qrLink = generateQRLink(vendorId, vendorName, vendorMobile, city, price);
+            document.getElementById('generatedLink').textContent = qrLink;
+            document.getElementById('linkDisplay').style.display = 'block';
+
+            showAlert('✅ Link generated!', 'success');
+        }
+
+        function copyToClipboard() {
+            const link = document.getElementById('generatedLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                showAlert('📋 Link copied to clipboard!', 'success');
+            }).catch(() => {
+                showAlert('❌ Failed to copy', 'error');
+            });
+        }
+
+        // Social Media QR
+        function shareOnWhatsApp() {
+            const vendorName = document.getElementById('socialVendorName').value;
+            const vendorMobile = document.getElementById('socialVendorMobile').value;
+            const vendorId = document.getElementById('socialVendorId').value;
+            const city = document.getElementById('socialCity').value;
+            const price = document.getElementById('socialPrice').value;
+
+            if (!vendorName || !vendorMobile || !vendorId || !city || !price) {
+                showAlert('❌ Please fill all required fields!', 'error');
+                return;
+            }
+
+            const qrLink = generateQRLink(vendorId, vendorName, vendorMobile, city, price);
+            const message = `🛍️ Order from ${vendorName}\n\n📱 Scan: ${qrLink}\n\n☕ ₹${price}/cup | 📍 ${city}`;
+            const wa = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(wa, '_blank');
+        }
+
+        function shareOnEmail() {
+            const vendorName = document.getElementById('socialVendorName').value;
+            const vendorMobile = document.getElementById('socialVendorMobile').value;
+            const vendorId = document.getElementById('socialVendorId').value;
+            const city = document.getElementById('socialCity').value;
+            const price = document.getElementById('socialPrice').value;
+
+            if (!vendorName || !vendorMobile || !vendorId || !city || !price) {
+                showAlert('❌ Please fill all required fields!', 'error');
+                return;
+            }
+
+            const qrLink = generateQRLink(vendorId, vendorName, vendorMobile, city, price);
+            const subject = `Check out ${vendorName}!`;
+            const body = `Visit ${vendorName} and order amazing tea!\n\n${qrLink}\n\nPrice: ₹${price}/cup`;
+            const email = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(email, '_blank');
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+            setTimeout(() => {
+                alert.className = 'alert';
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
